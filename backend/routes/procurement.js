@@ -93,7 +93,7 @@ router.get('/dashboard-charts', async (req, res) => {
             FROM suppliers s
             LEFT JOIN products p ON s.id = p.supplier_id AND p.status = 'active'
             WHERE s.status = 'active'
-            GROUP BY s.id
+            GROUP BY s.id, s.name
             ORDER BY product_count DESC
             LIMIT 10
         `);
@@ -138,7 +138,7 @@ router.get('/dashboard-charts', async (req, res) => {
             LEFT JOIN categories c ON pg.category_id = c.id
             LEFT JOIN product_mapping pm ON pg.id = pm.product_group_id
             WHERE pg.status = 'active'
-            GROUP BY c.id
+            GROUP BY c.id, c.name
             ORDER BY product_count DESC
         `);
 
@@ -187,7 +187,7 @@ router.get('/dashboard-charts', async (req, res) => {
             LEFT JOIN products p ON s.id = p.supplier_id
             LEFT JOIN price_history ph ON p.id = ph.product_id
             WHERE s.status = 'active'
-            GROUP BY s.id
+            GROUP BY s.id, s.name
             ORDER BY update_count DESC
             LIMIT 8
         `);
@@ -252,7 +252,7 @@ router.get('/top-volatile', async (req, res) => {
             JOIN price_history ph ON p.id = ph.product_id
             JOIN suppliers s ON p.supplier_id = s.id
             WHERE p.status = 'active'
-            GROUP BY p.id
+            GROUP BY p.id, p.product_name, p.product_code, s.name
             HAVING COUNT(ph.id) >= 2
             ORDER BY volatility_pct DESC
             LIMIT 10

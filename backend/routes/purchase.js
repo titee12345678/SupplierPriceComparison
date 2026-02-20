@@ -480,7 +480,7 @@ router.get('/summary', async (req, res) => {
                    MAX(unit_price) as max_price,
                    SUM(total_price) as total_value
             FROM purchase_history
-            GROUP BY product_code
+            GROUP BY product_code, product_name, unit
             ORDER BY order_count DESC
             LIMIT 20
         `);
@@ -493,7 +493,7 @@ router.get('/summary', async (req, res) => {
                    SUM(ph.total_price) as total_value
             FROM purchase_history ph
             LEFT JOIN suppliers s ON ph.supplier_id = s.id
-            GROUP BY ph.supplier_id
+            GROUP BY ph.supplier_id, s.name, s.code
             ORDER BY total_value DESC
         `);
 
