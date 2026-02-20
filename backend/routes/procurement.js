@@ -126,14 +126,7 @@ router.get('/dashboard-charts', async (req, res) => {
             FROM products
             WHERE price IS NOT NULL AND status = 'active'
             GROUP BY 1
-            ORDER BY 
-                CASE price_range
-                    WHEN '0-100' THEN 1
-                    WHEN '100-500' THEN 2
-                    WHEN '500-1000' THEN 3
-                    WHEN '1000-5000' THEN 4
-                    ELSE 5
-                END
+            ORDER BY MIN(price)
         `);
 
         // 4. Products by Category (Bar Chart)

@@ -33,7 +33,48 @@ module.exports.isPG = isPG;
 function convertPlaceholders(sql) {
     if (!isPG) return sql;
     let idx = 0;
-    return sql.replace(/\?/g, () => `$${++idx}`);
+    let converted = sql.replace(/\?/g, () => `$${++idx}`);
+    // Fix ROUND(expr, N) for PostgreSQL — needs ::numeric cast
+    converted = fixRoundForPG(converted);
+    return converted;
+}
+
+// Properly handle nested parentheses in ROUND() calls
+function fixRoundForPG(sql) {
+    const upper = sql.toUpperCase();
+    let result = '';
+    let i = 0;
+    while (i < sql.length) {
+        const searchFrom = upper.indexOf('ROUND(', i);
+        if (searchFrom === -1) {
+            result += sql.substring(i);
+            break;
+        }
+        result += sql.substring(i, searchFrom);
+        // Find matching closing paren, tracking depth
+        let depth = 0;
+        let j = searchFrom + 5; // index of '(' after ROUND
+        let lastCommaAt = -1;
+        while (j < sql.length) {
+            if (sql[j] === '(') depth++;
+            else if (sql[j] === ')') {
+                depth--;
+                if (depth === 0) break;
+            } else if (sql[j] === ',' && depth === 1) {
+                lastCommaAt = j;
+            }
+            j++;
+        }
+        if (lastCommaAt > 0 && depth === 0) {
+            const firstArg = sql.substring(searchFrom + 6, lastCommaAt);
+            const secondArg = sql.substring(lastCommaAt + 1, j).trim();
+            result += `ROUND((${firstArg})::numeric, ${secondArg})`;
+        } else {
+            result += sql.substring(searchFrom, j + 1);
+        }
+        i = j + 1;
+    }
+    return result;
 }
 
 // PostgreSQL doesn't accept '' for DATE/INTEGER columns — convert to null
@@ -126,12 +167,6 @@ module.exports.SQL = SQL;
 // ===== Create Tables =====
 const initDatabase = async () => {
     if (isPG) {
-        // Create ROUND overload for double precision (SQLite compatibility)
-        await pool.query(`
-            CREATE OR REPLACE FUNCTION round(double precision, integer)
-            RETURNS numeric AS $$ SELECT round($1::numeric, $2); $$ LANGUAGE SQL IMMUTABLE;
-        `);
-
         // PostgreSQL: create tables
         await pool.query(`
             CREATE TABLE IF NOT EXISTS suppliers (
