@@ -33,48 +33,7 @@ module.exports.isPG = isPG;
 function convertPlaceholders(sql) {
     if (!isPG) return sql;
     let idx = 0;
-    let converted = sql.replace(/\?/g, () => `$${++idx}`);
-    // Fix ROUND(expr, N) for PostgreSQL — needs ::numeric cast
-    converted = fixRoundForPG(converted);
-    return converted;
-}
-
-// Properly handle nested parentheses in ROUND() calls
-function fixRoundForPG(sql) {
-    const upper = sql.toUpperCase();
-    let result = '';
-    let i = 0;
-    while (i < sql.length) {
-        const searchFrom = upper.indexOf('ROUND(', i);
-        if (searchFrom === -1) {
-            result += sql.substring(i);
-            break;
-        }
-        result += sql.substring(i, searchFrom);
-        // Find matching closing paren, tracking depth
-        let depth = 0;
-        let j = searchFrom + 5; // index of '(' after ROUND
-        let lastCommaAt = -1;
-        while (j < sql.length) {
-            if (sql[j] === '(') depth++;
-            else if (sql[j] === ')') {
-                depth--;
-                if (depth === 0) break;
-            } else if (sql[j] === ',' && depth === 1) {
-                lastCommaAt = j;
-            }
-            j++;
-        }
-        if (lastCommaAt > 0 && depth === 0) {
-            const firstArg = sql.substring(searchFrom + 6, lastCommaAt);
-            const secondArg = sql.substring(lastCommaAt + 1, j).trim();
-            result += `ROUND((${firstArg})::numeric, ${secondArg})`;
-        } else {
-            result += sql.substring(searchFrom, j + 1);
-        }
-        i = j + 1;
-    }
-    return result;
+    return sql.replace(/\?/g, () => `$${++idx}`);
 }
 
 // PostgreSQL doesn't accept '' for DATE/INTEGER columns — convert to null
@@ -158,8 +117,10 @@ const SQL = {
         ? 'SERIAL PRIMARY KEY'
         : 'INTEGER PRIMARY KEY AUTOINCREMENT',
 
-    // LIMIT ? OFFSET ? — same syntax in both, but PG needs ::int cast sometimes
-    // Actually both support LIMIT/OFFSET with ? params, so no conversion needed
+    // ROUND that works in both: PG needs numeric cast
+    round: (expr, decimals) => isPG
+        ? `ROUND((${expr})::numeric, ${decimals})`
+        : `ROUND(${expr}, ${decimals})`,
 };
 
 module.exports.SQL = SQL;
