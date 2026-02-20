@@ -674,27 +674,26 @@ router.get('/dashboard', async (req, res) => {
 // Delete all data (products, price history, mappings, etc.)
 router.delete('/delete-all-data', async (req, res) => {
     try {
+        const { isPG } = require('../database');
+
         // Count before deletion for logging
         const productCount = await getOne('SELECT COUNT(*) as count FROM products');
         const historyCount = await getOne('SELECT COUNT(*) as count FROM price_history');
         const groupCount = await getOne('SELECT COUNT(*) as count FROM product_groups');
         const mappingCount = await getOne('SELECT COUNT(*) as count FROM product_mapping');
 
-        // Delete in order (foreign key dependencies)
-        await runQuery('DELETE FROM price_history');
-        await runQuery('DELETE FROM product_mapping');
-        await runQuery('DELETE FROM products');
-        await runQuery('DELETE FROM product_groups');
-
-        // Also clear import logs if exists
-        try {
-            await runQuery('DELETE FROM import_logs');
-        } catch (e) { /* table might not exist */ }
-
-        // Also clear purchase history
-        try {
-            await runQuery('DELETE FROM purchase_history');
-        } catch (e) { /* table might not exist */ }
+        if (isPG) {
+            // PostgreSQL: use TRUNCATE CASCADE for clean deletion
+            await runQuery('TRUNCATE TABLE purchase_history, import_logs, price_history, product_mapping, products, product_groups RESTART IDENTITY CASCADE');
+        } else {
+            // SQLite: delete in correct foreign key order
+            try { await runQuery('DELETE FROM purchase_history'); } catch (e) { }
+            try { await runQuery('DELETE FROM import_logs'); } catch (e) { }
+            await runQuery('DELETE FROM price_history');
+            await runQuery('DELETE FROM product_mapping');
+            await runQuery('DELETE FROM products');
+            await runQuery('DELETE FROM product_groups');
+        }
 
         // Log the action
         await runQuery(
