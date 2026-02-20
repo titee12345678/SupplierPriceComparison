@@ -33,10 +33,7 @@ module.exports.isPG = isPG;
 function convertPlaceholders(sql) {
     if (!isPG) return sql;
     let idx = 0;
-    let converted = sql.replace(/\?/g, () => `$${++idx}`);
-    // PostgreSQL ROUND() requires numeric type, not float/double
-    converted = converted.replace(/ROUND\(([^,)]+),\s*(\d+)\)/gi, 'ROUND(($1)::numeric, $2)');
-    return converted;
+    return sql.replace(/\?/g, () => `$${++idx}`);
 }
 
 // PostgreSQL doesn't accept '' for DATE/INTEGER columns — convert to null
@@ -129,6 +126,12 @@ module.exports.SQL = SQL;
 // ===== Create Tables =====
 const initDatabase = async () => {
     if (isPG) {
+        // Create ROUND overload for double precision (SQLite compatibility)
+        await pool.query(`
+            CREATE OR REPLACE FUNCTION round(double precision, integer)
+            RETURNS numeric AS $$ SELECT round($1::numeric, $2); $$ LANGUAGE SQL IMMUTABLE;
+        `);
+
         // PostgreSQL: create tables
         await pool.query(`
             CREATE TABLE IF NOT EXISTS suppliers (
