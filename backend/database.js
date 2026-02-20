@@ -36,19 +36,29 @@ function convertPlaceholders(sql) {
     return sql.replace(/\?/g, () => `$${++idx}`);
 }
 
+// PostgreSQL doesn't accept '' for DATE/INTEGER columns — convert to null
+function sanitizeParams(params) {
+    if (!isPG) return params;
+    return params.map(p => (p === '' ? null : p));
+}
+
 // Run INSERT/UPDATE/DELETE query
 const runQuery = (sql, params = []) => {
     const convertedSQL = convertPlaceholders(sql);
+    const safeParams = sanitizeParams(params);
     if (isPG) {
         // For INSERT, add RETURNING id to get lastID
         const isInsert = /^\s*INSERT/i.test(convertedSQL);
         const finalSQL = isInsert && !/RETURNING/i.test(convertedSQL)
             ? convertedSQL + ' RETURNING id'
             : convertedSQL;
-        return pool.query(finalSQL, params).then(result => ({
+        return pool.query(finalSQL, safeParams).then(result => ({
             lastID: result.rows && result.rows[0] ? result.rows[0].id : null,
             changes: result.rowCount
-        }));
+        })).catch(err => {
+            console.error('PG runQuery error:', err.message, '\nSQL:', finalSQL.substring(0, 200));
+            throw err;
+        });
     }
     return new Promise((resolve, reject) => {
         db.run(convertedSQL, params, function (err) {
@@ -61,8 +71,9 @@ const runQuery = (sql, params = []) => {
 // Get one row
 const getOne = (sql, params = []) => {
     const convertedSQL = convertPlaceholders(sql);
+    const safeParams = sanitizeParams(params);
     if (isPG) {
-        return pool.query(convertedSQL, params).then(result => result.rows[0] || null);
+        return pool.query(convertedSQL, safeParams).then(result => result.rows[0] || null);
     }
     return new Promise((resolve, reject) => {
         db.get(convertedSQL, params, (err, row) => {
@@ -75,8 +86,9 @@ const getOne = (sql, params = []) => {
 // Get all rows
 const getAll = (sql, params = []) => {
     const convertedSQL = convertPlaceholders(sql);
+    const safeParams = sanitizeParams(params);
     if (isPG) {
-        return pool.query(convertedSQL, params).then(result => result.rows);
+        return pool.query(convertedSQL, safeParams).then(result => result.rows);
     }
     return new Promise((resolve, reject) => {
         db.all(convertedSQL, params, (err, rows) => {
