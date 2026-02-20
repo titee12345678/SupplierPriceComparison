@@ -244,10 +244,10 @@ router.get('/top-volatile', async (req, res) => {
                 MIN(ph.price) as min_price,
                 MAX(ph.price) as max_price,
                 AVG(ph.price) as avg_price,
-                ${SQL.round(`
+                ROUND(
                     (MAX(ph.price) - MIN(ph.price)) * 100.0 / 
                     CASE WHEN AVG(ph.price) = 0 THEN 1 ELSE AVG(ph.price) END
-                `, 2)} as volatility_pct
+                , 2) as volatility_pct
             FROM products p
             JOIN price_history ph ON p.id = ph.product_id
             JOIN suppliers s ON p.supplier_id = s.id
@@ -1539,7 +1539,7 @@ router.get('/price-anomalies', async (req, res) => {
                 ph.price as new_price,
                 ph.effective_date,
                 prev.price as old_price,
-                ${SQL.round('ABS((ph.price - prev.price) / prev.price * 100)', 2)} as change_percent,
+                ROUND(ABS((ph.price - prev.price) / prev.price * 100), 2) as change_percent,
                 CASE WHEN ph.price > prev.price THEN 'increase' ELSE 'decrease' END as direction
             FROM price_history ph
             JOIN products p ON ph.product_id = p.id
@@ -1577,9 +1577,9 @@ router.get('/reports/summary', async (req, res) => {
                 COUNT(DISTINCT pm.product_id) as supplier_count,
                 MIN(p.price) as min_price,
                 MAX(p.price) as max_price,
-                ${SQL.round('AVG(p.price)', 2)} as avg_price,
-                ${SQL.round('MAX(p.price) - MIN(p.price)', 2)} as price_spread,
-                ${SQL.round('(MAX(p.price) - MIN(p.price)) / NULLIF(MIN(p.price), 0) * 100', 2)} as spread_percent
+                ROUND(AVG(p.price), 2) as avg_price,
+                ROUND(MAX(p.price) - MIN(p.price), 2) as price_spread,
+                ROUND((MAX(p.price) - MIN(p.price)) / NULLIF(MIN(p.price), 0) * 100, 2) as spread_percent
             FROM product_groups pg
             LEFT JOIN categories c ON pg.category_id = c.id
             LEFT JOIN product_mapping pm ON pg.id = pm.product_group_id
@@ -1597,7 +1597,7 @@ router.get('/reports/summary', async (req, res) => {
                 s.name,
                 s.code,
                 COUNT(p.id) as product_count,
-                ${SQL.round('AVG(p.price)', 2)} as avg_price,
+                ROUND(AVG(p.price), 2) as avg_price,
                 SUM(CASE WHEN p.price = (
                     SELECT MIN(p2.price) FROM products p2
                     JOIN product_mapping pm2 ON p2.id = pm2.product_id
@@ -1605,11 +1605,11 @@ router.get('/reports/summary', async (req, res) => {
                     JOIN products p3 ON pm3.product_id = p3.id AND p3.status = 'active'
                     WHERE pm2.product_group_id = pm.product_group_id
                 ) THEN 1 ELSE 0 END) as lowest_count,
-                ${SQL.round(`SUM(CASE WHEN p.price = (
+                ROUND(SUM(CASE WHEN p.price = (
                     SELECT MIN(p2.price) FROM products p2
                     JOIN product_mapping pm2 ON p2.id = pm2.product_id
                     WHERE pm2.product_group_id = pm.product_group_id AND p2.status = 'active'
-                ) THEN 1.0 ELSE 0 END) / NULLIF(COUNT(p.id), 0) * 100`, 1)} as win_rate
+                ) THEN 1.0 ELSE 0 END) / NULLIF(COUNT(p.id), 0) * 100, 1) as win_rate
             FROM suppliers s
             JOIN products p ON s.id = p.supplier_id AND p.status = 'active'
             LEFT JOIN product_mapping pm ON p.id = pm.product_id

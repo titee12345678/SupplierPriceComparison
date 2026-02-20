@@ -475,7 +475,7 @@ router.get('/summary', async (req, res) => {
             SELECT product_code, product_name, unit,
                    COUNT(*) as order_count,
                    SUM(quantity) as total_qty,
-                   ${SQL.round('AVG(unit_price)', 2)} as avg_price,
+                   ROUND(AVG(unit_price), 2) as avg_price,
                    MIN(unit_price) as min_price,
                    MAX(unit_price) as max_price,
                    SUM(total_price) as total_value
