@@ -503,9 +503,9 @@ router.get('/summary', async (req, res) => {
                    COUNT(*) as order_count,
                    SUM(total_price) as total_value
             FROM purchase_history
-            WHERE purchase_date IS NOT NULL AND purchase_date != ''
-            GROUP BY month
-            ORDER BY month ASC
+            WHERE purchase_date IS NOT NULL
+            GROUP BY 1
+            ORDER BY 1 ASC
         `);
 
         res.json({ overall, topProducts, supplierBreakdown, monthlyTrend });

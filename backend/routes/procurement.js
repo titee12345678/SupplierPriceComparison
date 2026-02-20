@@ -125,7 +125,7 @@ router.get('/dashboard-charts', async (req, res) => {
                 COUNT(*) as count
             FROM products
             WHERE price IS NOT NULL AND status = 'active'
-            GROUP BY price_range
+            GROUP BY 1
             ORDER BY 
                 CASE price_range
                     WHEN '0-100' THEN 1
@@ -1592,9 +1592,9 @@ router.get('/reports/summary', async (req, res) => {
             LEFT JOIN product_mapping pm ON pg.id = pm.product_group_id
             LEFT JOIN products p ON pm.product_id = p.id AND p.status = 'active'
             WHERE pg.status = 'active'
-            GROUP BY pg.id
-            HAVING supplier_count > 0
-            ORDER BY spread_percent DESC
+            GROUP BY pg.id, pg.master_code, pg.master_name, c.name
+            HAVING COUNT(DISTINCT pm.product_id) > 0
+            ORDER BY 10 DESC
         `);
 
         // 2. Supplier ranking (by average price competitiveness)
@@ -1621,8 +1621,8 @@ router.get('/reports/summary', async (req, res) => {
             JOIN products p ON s.id = p.supplier_id AND p.status = 'active'
             LEFT JOIN product_mapping pm ON p.id = pm.product_id
             WHERE s.status = 'active'
-            GROUP BY s.id
-            ORDER BY win_rate DESC
+            GROUP BY s.id, s.name, s.code
+            ORDER BY 7 DESC
         `);
 
         // 3. Recent anomalies count
@@ -1641,7 +1641,7 @@ router.get('/reports/summary', async (req, res) => {
                 WHERE p.status = 'active'
                 AND ABS((ph.price - prev.price) / prev.price * 100) >= 15
                 AND ph.effective_date >= ${SQL.dateAgo(30, 'days')}
-            )
+            ) AS sub
         `);
 
         // 4. Overall stats

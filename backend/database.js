@@ -33,10 +33,14 @@ module.exports.isPG = isPG;
 function convertPlaceholders(sql) {
     if (!isPG) return sql;
     let idx = 0;
-    return sql.replace(/\?/g, () => `$${++idx}`);
+    let converted = sql.replace(/\?/g, () => `$${++idx}`);
+    // PostgreSQL ROUND() requires numeric type, not float/double
+    converted = converted.replace(/ROUND\(([^,)]+),\s*(\d+)\)/gi, 'ROUND(($1)::numeric, $2)');
+    return converted;
 }
 
 // PostgreSQL doesn't accept '' for DATE/INTEGER columns — convert to null
+// Also cast numeric string params for LIMIT/OFFSET to integers
 function sanitizeParams(params) {
     if (!isPG) return params;
     return params.map(p => (p === '' ? null : p));
