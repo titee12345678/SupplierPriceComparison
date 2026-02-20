@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: price-compare
+    runtime: node
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: price-compare-db
+          property: connectionString
+
+databases:
+  - name: price-compare-db
+    plan: free

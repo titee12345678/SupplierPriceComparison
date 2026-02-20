@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบเปรียบเทียบราคา Supplier</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+    <div id="app">
+        <!-- Login Page -->
+        <div id="loginPage" class="page active">
+            <div class="login-container">
+                <div class="login-card glass-card">
+                    <div class="login-header">
+                        <div class="logo-container">
+                            <i class="fas fa-chart-line logo-icon"></i>
+                        </div>
+                        <h1>Supplier Price Comparison</h1>
+                        <p>ระบบเปรียบเทียบราคา Supplier</p>
+                    </div>
+                    <form id="loginForm" class="login-form">
+                        <div class="form-group">
+                            <label for="username">
+                                <i class="fas fa-user"></i>
+                                Username
+                            </label>
+                            <input type="text" id="username" name="username" placeholder="Enter username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">
+                                <i class="fas fa-lock"></i>
+                                Password
+                            </label>
+                            <input type="password" id="password" name="password" placeholder="Enter password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-sign-in-alt"></i>
+                            เข้าสู่ระบบ
+                        </button>
+                    </form>
+                    <div id="loginError" class="error-message hidden"></div>
+                    <div class="login-footer">
+                        <small>© 2025 Supplier Price Comparison System</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App -->
+        <div id="mainApp" class="page hidden">
+            <!-- Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <div class="logo">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Price Compare</span>
+                    </div>
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+
+                <nav class="sidebar-nav">
+                    <ul id="sidebarNav">
+                        <!-- Navigation items will be dynamically populated -->
+                    </ul>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="user-details">
+                            <span class="user-name" id="userName">User</span>
+                            <span class="user-role" id="userRole">Role</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-ghost btn-sm" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>ออกจากระบบ</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <header class="top-header">
+                    <div class="header-left">
+                        <button class="mobile-menu-btn" id="mobileMenuBtn">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <h2 id="pageTitle">Dashboard</h2>
+                    </div>
+                    <div class="header-right">
+                        <div class="header-search" style="position:relative;">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="ค้นหา..." id="globalSearch" autocomplete="off">
+                            <button class="btn btn-primary btn-sm" id="globalSearchBtn"
+                                style="margin-left:0.5rem;border-radius:8px;padding:0.35rem 0.8rem;font-size:0.8rem;">
+                                <i class="fas fa-search"></i> ค้นหา
+                            </button>
+                            <div class="universal-search-dropdown" id="globalSearchDropdown"
+                                style="position:absolute;top:100%;left:0;right:0;z-index:999;margin-top:0.5rem;"></div>
+                        </div>
+
+                        <!-- Theme Toggle Button -->
+                        <button class="theme-toggle-btn" id="themeToggle" title="สลับโหมดสว่าง/มืด">
+                            <i class="fas fa-sun" id="themeIcon"></i>
+                        </button>
+
+                        <div class="notification-wrapper">
+                            <button class="notification-btn" id="notificationBtn">
+                                <i class="fas fa-bell"></i>
+                                <span class="badge" id="notificationBadge">3</span>
+                            </button>
+                            <div class="notification-dropdown hidden" id="notificationDropdown">
+                                <div class="notification-header">
+                                    <span>การแจ้งเตือน</span>
+                                </div>
+                                <div class="notification-list" id="notificationList">
+                                    <!-- Notifications will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="content-wrapper" id="contentWrapper">
+                    <!-- Dynamic content will be loaded here -->
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+
+</html>
