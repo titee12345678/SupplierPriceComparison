@@ -548,16 +548,6 @@ class App {
                             </div>
                         </div>
                         </div>
-                        <div class="toolbar-right" style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
-                            <input type="date" id="dashStartDate" class="form-control" style="max-width:160px;" title="วันที่เริ่มต้น">
-                            <span style="color:var(--text-muted);">-</span>
-                            <input type="date" id="dashEndDate" class="form-control" style="max-width:160px;" title="วันที่สิ้นสุด">
-                            <button class="btn btn-primary btn-sm" onclick="app.filterDashboardByDate()">
-                                <i class="fas fa-filter"></i> กรอง
-                            </button>
-                            <button class="btn btn-success" onclick="app.exportAllToExcel()">
-                                <i class="fas fa-file-excel"></i> Export
-                            </button>
                         </div>
                     </div>
                 </div>
