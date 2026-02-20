@@ -48,7 +48,7 @@ router.get('/dashboard', async (req, res) => {
             SELECT p.*, s.name as supplier_name 
             FROM products p
             JOIN suppliers s ON p.supplier_id = s.id
-            WHERE p.updated_at >= datetime('now', '-7 days')
+            WHERE p.updated_at >= ${SQL.dateAgo(7, 'days')}
             ORDER BY p.updated_at DESC
             LIMIT 10
         `);

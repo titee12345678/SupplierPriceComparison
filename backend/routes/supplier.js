@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const XLSX = require('xlsx');
 const path = require('path');
-const { getOne, getAll, runQuery } = require('../database');
+const { getOne, getAll, runQuery, SQL } = require('../database');
 const { requireSupplier } = require('../middleware/auth');
 
 // Configure multer for Excel upload
@@ -461,7 +461,7 @@ router.get('/dashboard', async (req, res) => {
 
         const recentUpdates = await getAll(`
             SELECT * FROM products 
-            WHERE supplier_id = ? AND updated_at >= datetime('now', '-7 days')
+            WHERE supplier_id = ? AND updated_at >= ${SQL.dateAgo(7, 'days')}
             ORDER BY updated_at DESC
             LIMIT 5
         `, [supplierId]);
