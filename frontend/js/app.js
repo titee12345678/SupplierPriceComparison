@@ -59,7 +59,16 @@ class App {
 
         // Mobile menu
         document.getElementById('mobileMenuBtn').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.toggle('open');
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            sidebar.classList.toggle('open');
+            backdrop.classList.toggle('active');
+        });
+
+        // Close sidebar when clicking backdrop
+        document.getElementById('sidebarBackdrop').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarBackdrop').classList.remove('active');
         });
 
         // Notification bell
@@ -429,6 +438,7 @@ class App {
 
         // Close mobile menu
         document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebarBackdrop').classList.remove('active');
 
         // Load page content
         this.loadPage(page);
