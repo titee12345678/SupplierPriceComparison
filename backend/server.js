@@ -124,10 +124,12 @@ initDatabase()
         app.listen(PORT, () => {
             console.log(`🚀 Server running at http://localhost:${PORT}`);
             console.log(`📊 API available at http://localhost:${PORT}/api`);
-            console.log('\n📝 Default users:');
-            console.log('   Admin:    admin_master / Tiger79Moon');
-            console.log('   Buyer:    buyer_ops / River48Star');
-            console.log('   Supplier: supplier_primary / Stone63Sky');
+            if (process.env.NODE_ENV !== 'production') {
+                console.log('\n📝 Default users:');
+                console.log('   Admin:    admin_master / Tiger79Moon');
+                console.log('   Buyer:    buyer_ops / River48Star');
+                console.log('   Supplier: supplier_primary / Stone63Sky');
+            }
         });
     })
     .catch(err => {
